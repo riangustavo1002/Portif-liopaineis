@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estoque de Painéis — Painel Executivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0D0F0E;
+    --ink2: #2A2D2C;
+    --ink3: #4A4D4C;
+    --ghost: #F5F3EE;
+    --ghost2: #EDEAE3;
+    --ghost3: #E2DED5;
+    --green: #1A6B4A;
+    --green-light: #D6EDDF;
+    --green-mid: #3FA76D;
+    --red: #8B1E1E;
+    --red-light: #F4DCDC;
+    --amber: #7A4B00;
+    --amber-light: #F5E8CC;
+    --blue: #1A3F6B;
+    --blue-light: #D6E4F0;
+    --border: rgba(13,15,14,0.1);
+    --border-strong: rgba(13,15,14,0.18);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ghost);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 2.5rem 3rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .page-header-left h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    color: #fff;
+  }
+  .page-header-left p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+  .page-header-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .audience-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.04em;
+  }
+  .audience-badge.active {
+    background: #fff;
+    color: var(--ink);
+    border-color: #fff;
+    cursor: pointer;
+  }
+  .audience-badge.active:hover { background: var(--ghost2); }
+
+  /* ── MAIN LAYOUT ── */
+  .main { padding: 2.5rem 3rem; max-width: 1300px; margin: 0 auto; }
+  @media (max-width: 768px) {
+    .page-header, .main { padding: 1.5rem; }
+  }
+
+  /* ── ALERT STRIP ── */
+  .alert-strip {
+    background: var(--red);
+    color: #fff;
+    padding: 12px 3rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .alert-strip .alert-icon {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0;
+  }
+  .alert-strip strong { font-weight: 500; }
+  .alert-items { display: flex; gap: 24px; flex-wrap: wrap; }
+  .alert-item { display: flex; align-items: center; gap: 6px; }
+  .alert-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.6); }
+
+  /* ── SECTION TITLE ── */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    margin-top: 2.5rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-head:first-child { margin-top: 0; }
+  .section-head h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+  }
+  .section-head span { font-size: 12px; color: var(--ink3); }
+
+  /* ── KPI ROW ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+  @media (max-width: 900px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.25rem 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
+  .kpi-card.highlight { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .kpi-card.highlight .kpi-label, .kpi-card.highlight .kpi-change { color: rgba(255,255,255,0.55); }
+  .kpi-card.highlight .kpi-value { color: #fff; }
+  .kpi-bar {
+    position: absolute; top: 0; left: 0; height: 3px; width: 100%;
+    background: var(--ghost3);
+  }
+  .kpi-bar-fill { height: 100%; border-radius: 0 2px 2px 0; }
+  .kpi-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink3); margin-bottom: 8px; font-family: 'Syne', sans-serif; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; line-height: 1.1; color: var(--ink); }
+  .kpi-change { font-size: 12px; color: var(--ink3); margin-top: 6px; }
+  .kpi-change.up { color: var(--green); }
+  .kpi-change.down { color: var(--red); }
+
+  /* ── TWO-COL LAYOUT ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 2rem; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 2rem; }
+  .two-third { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 2rem; }
+  @media (max-width: 900px) { .two-col, .three-col, .two-third { grid-template-columns: 1fr; } }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    overflow: hidden;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink3);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-title-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .tag-red { background: var(--red-light); color: var(--red); }
+  .tag-green { background: var(--green-light); color: var(--green); }
+  .tag-amber { background: var(--amber-light); color: var(--amber); }
+  .tag-blue { background: var(--blue-light); color: var(--blue); }
+
+  /* ── RANKING TABLE ── */
+  .rank-table { width: 100%; border-collapse: collapse; }
+  .rank-table th {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--ink3); padding: 0 8px 10px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+  }
+  .rank-table th:last-child, .rank-table td:last-child { text-align: right; }
+  .rank-table td { padding: 10px 8px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .rank-table tr:last-child td { border-bottom: none; }
+  .rank-table tr:hover td { background: var(--ghost); }
+  .rank-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--ghost2); color: var(--ink3);
+  }
+  .rank-num.gold { background: #F5E8CC; color: #7A4B00; }
+  .rank-num.silver { background: #E8E8E8; color: #555; }
+  .rank-num.bronze { background: #F2DDD2; color: #7A3A1E; }
+  .pill {
+    font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  }
+  .pill-red { background: var(--red-light); color: var(--red); }
+  .pill-green { background: var(--green-light); color: var(--green); }
+  .pill-amber { background: var(--amber-light); color: var(--amber); }
+  .pill-blue { background: var(--blue-light); color: var(--blue); }
+
+  /* ── HORIZONTAL BAR ── */
+  .hbar-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .hbar-row { display: grid; grid-template-columns: 120px 1fr 56px; align-items: center; gap: 10px; }
+  .hbar-label { font-size: 12px; color: var(--ink2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hbar-track { height: 8px; background: var(--ghost3); border-radius: 4px; overflow: hidden; }
+  .hbar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .hbar-val { font-size: 12px; font-weight: 600; font-family: 'Syne', sans-serif; color: var(--ink2); text-align: right; }
+
+  /* ── ACTION PANEL ── */
+  .action-section { margin-top: 2.5rem; }
+  .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .action-grid { grid-template-columns: 1fr; } }
+  .action-card {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .action-header {
+    padding: 1.1rem 1.25rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .action-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .action-role { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .action-sub { font-size: 11px; opacity: 0.6; margin-top: 1px; }
+  .action-body { padding: 0 1.25rem 1.25rem; }
+  .action-item {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 12.5px;
+  }
+  .action-item:first-child { border-top: none; }
+  .action-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 700;
+    width: 20px; height: 20px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .action-text { line-height: 1.45; }
+  .action-text strong { font-weight: 500; display: block; }
+  .action-text span { font-size: 11px; opacity: 0.7; }
+
+  /* Presidente */
+  .action-card.presidente .action-header { background: var(--ink); color: #fff; }
+  .action-card.presidente .action-icon { background: rgba(255,255,255,0.15); }
+  .action-card.presidente .action-body { background: #1A1C1B; color: rgba(255,255,255,0.85); }
+  .action-card.presidente .action-item { border-color: rgba(255,255,255,0.08); }
+  .action-card.presidente .action-num { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+  /* Diretor */
+  .action-card.diretor .action-header { background: var(--blue); color: #fff; }
+  .action-card.diretor .action-icon { background: rgba(255,255,255,0.15); }
+  .action-card.diretor .action-body { background: #1A2D42; color: rgba(255,255,255,0.85); }
+  .action-card.diretor .action-item { border-color: rgba(255,255,255,0.08); }
+  .action-card.diretor .action-num { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+  /* Gerente */
+  .action-card.gerente .action-header { background: var(--green); color: #fff; }
+  .action-card.gerente .action-icon { background: rgba(255,255,255,0.15); }
+  .action-card.gerente .action-body { background: #0F2D1E; color: rgba(255,255,255,0.85); }
+  .action-card.gerente .action-item { border-color: rgba(255,255,255,0.08); }
+  .action-card.gerente .action-num { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+
+  /* ── SUBSTITUIÇÃO MATRIX ── */
+  .matrix-wrap { overflow-x: auto; }
+  .matrix-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  .matrix-table th {
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--ink3); padding: 0 10px 10px; text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+  }
+  .matrix-table td { padding: 10px 10px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table tr:hover td { background: var(--ghost); }
+  .arrow-cell { display: flex; align-items: center; gap: 8px; }
+  .arrow { color: var(--ink3); font-size: 14px; }
+  .impact-bar { height: 5px; background: var(--ghost3); border-radius: 3px; overflow: hidden; min-width: 60px; }
+  .impact-fill { height: 100%; border-radius: 3px; }
+
+  /* ── MARGIN CHART ── */
+  .margin-list { display: flex; flex-direction: column; gap: 8px; }
+  .margin-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--ghost); border: 1px solid var(--border); }
+  .margin-rank { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--ghost3); width: 28px; text-align: center; flex-shrink: 0; }
+  .margin-info { flex: 1; min-width: 0; }
+  .margin-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .margin-sub { font-size: 11px; color: var(--ink3); }
+  .margin-pct { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .margin-bar-wrap { width: 70px; }
+
+  /* ── VOLUME TREND (mini spark) ── */
+  .spark-row { display: flex; flex-direction: column; gap: 10px; }
+  .spark-item { display: flex; align-items: center; gap: 12px; }
+  .spark-label { font-size: 12px; font-weight: 500; color: var(--ink2); min-width: 80px; }
+  .spark-bars { display: flex; gap: 3px; align-items: flex-end; height: 28px; flex: 1; }
+  .spark-bar { flex: 1; border-radius: 2px 2px 0 0; min-height: 3px; transition: height 0.5s; }
+  .spark-val { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; color: var(--ink2); min-width: 48px; text-align: right; }
+
+  /* ── SKU CARD ── */
+  .sku-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sku-item {
+    padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--ghost);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .sku-icon { font-size: 20px; flex-shrink: 0; }
+  .sku-name { font-size: 12px; font-weight: 500; color: var(--ink); }
+  .sku-detail { font-size: 11px; color: var(--ink3); margin-top: 2px; line-height: 1.4; }
+  .sku-count { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 2rem 3rem;
+    font-size: 11px;
+    color: var(--ink3);
+    border-top: 1px solid var(--border);
+    background: #fff;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .kpi-card, .card, .action-card {
+    animation: fadeUp 0.45s ease both;
+  }
+  .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.10s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.20s; }
+  .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+
+<!-- ALERT STRIP -->
+<div class="alert-strip" style="padding-left: 3rem; padding-right: 3rem;">
+  <div class="alert-icon">!</div>
+  <strong>Atenção crítica:</strong>
+  <div class="alert-items">
+    <div class="alert-item"><div class="alert-dot"></div> 12 grupos com ruptura imediata</div>
+    <div class="alert-item"><div class="alert-dot"></div> R$ 2,4M em estoque ocioso sem substituição mapeada</div>
+    <div class="alert-item"><div class="alert-dot"></div> 3 espécies com saída &gt; estoque nos próximos 30 dias</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Painel Estratégico<br>de Estoque — Painéis</h1>
+    <p>Atualizado via Google Sheets · Dados consolidados · Uso executivo</p>
+  </div>
+  <div class="page-header-right">
+    <span class="audience-badge active">Presidente</span>
+    <span class="audience-badge active">Diretor</span>
+    <span class="audience-badge active">Gerente</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="section-head" style="margin-top:0">
+    <h2>Visão geral do estoque</h2>
+    <span>Competência atual</span>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi-card highlight">
+      <div class="kpi-label">Estoque Total (PCP)</div>
+      <div class="kpi-value">4.820 m³</div>
+      <div class="kpi-change">Estoque confiável auditado</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:38%;background:var(--red);"></div></div>
+      <div class="kpi-label">Em Ruptura</div>
+      <div class="kpi-value" style="color:var(--red);">12 SKUs</div>
+      <div class="kpi-change down">↑ 4 vs. mês anterior</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:60%;background:var(--amber);"></div></div>
+      <div class="kpi-label">Estoque Ocioso</div>
+      <div class="kpi-value" style="color:var(--amber);">R$ 2,4M</div>
+      <div class="kpi-change">8 grupos com excesso</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:72%;background:var(--green);"></div></div>
+      <div class="kpi-label">Margem Média</div>
+      <div class="kpi-value" style="color:var(--green);">34,7%</div>
+      <div class="kpi-change up">↑ 2,1pp vs. trimestre</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:55%;background:var(--blue);"></div></div>
+      <div class="kpi-label">SKUs Produzíveis</div>
+      <div class="kpi-value" style="color:var(--blue);">247</div>
+      <div class="kpi-change">Com estoque disponível hoje</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: TOP ESTOQUE + MARGEM -->
+  <div class="two-col">
+
+    <!-- TOP MAIORES ESTOQUES -->
+    <div class="card">
+      <div class="card-title">
+        Ranking — Maiores estoques (m³)
+        <span class="card-title-tag tag-blue">Volume</span>
+      </div>
+      <table class="rank-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Grupo / Espécie</th>
+            <th>Medida (mm)</th>
+            <th>Status</th>
+            <th>m³</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-num gold">1</span></td>
+            <td><strong style="font-weight:500">MDF Branco</strong><br><span style="font-size:11px;color:var(--ink3)">MDF-1830</span></td>
+            <td style="font-size:12px;color:var(--ink3)">1830×915×18</td>
+            <td><span class="pill pill-amber">Excesso</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">620</strong></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num silver">2</span></td>
+            <td><strong style="font-weight:500">Pinus Bruto</strong><br><span style="font-size:11px;color:var(--ink3)">PIN-2200</span></td>
+            <td style="font-size:12px;color:var(--ink3)">2200×1100×15</td>
+            <td><span class="pill pill-green">Normal</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">484</strong></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num bronze">3</span></td>
+            <td><strong style="font-weight:500">Compensado Naval</strong><br><span style="font-size:11px;color:var(--ink3)">CMP-2440</span></td>
+            <td style="font-size:12px;color:var(--ink3)">2440×1220×12</td>
+            <td><span class="pill pill-amber">Excesso</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">371</strong></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num">4</span></td>
+            <td><strong style="font-weight:500">Eucalipto Laminado</strong><br><span style="font-size:11px;color:var(--ink3)">EUC-2750</span></td>
+            <td style="font-size:12px;color:var(--ink3)">2750×1840×25</td>
+            <td><span class="pill pill-green">Normal</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">298</strong></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num">5</span></td>
+            <td><strong style="font-weight:500">MDF Cru 15mm</strong><br><span style="font-size:11px;color:var(--ink3)">MDF-1830B</span></td>
+            <td style="font-size:12px;color:var(--ink3)">1830×915×15</td>
+            <td><span class="pill pill-red">Falta</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">52</strong></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num">6</span></td>
+            <td><strong style="font-weight:500">OSB Estrutural</strong><br><span style="font-size:11px;color:var(--ink3)">OSB-2440</span></td>
+            <td style="font-size:12px;color:var(--ink3)">2440×1220×18</td>
+            <td><span class="pill pill-red">Falta</span></td>
+            <td><strong style="font-family:'Syne',sans-serif">31</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RANKING MARGEM -->
+    <div class="card">
+      <div class="card-title">
+        Ranking — Maior margem por espécie
+        <span class="card-title-tag tag-green">Rentabilidade</span>
+      </div>
+      <div class="margin-list">
+        <div class="margin-item">
+          <div class="margin-rank">1</div>
+          <div class="margin-info">
+            <div class="margin-name">Eucalipto Laminado</div>
+            <div class="margin-sub">Saída: 48 m³/mês · Estoque: 298 m³</div>
+          </div>
+          <div class="margin-bar-wrap">
+            <div class="hbar-track"><div class="hbar-fill" style="width:91%;background:var(--green-mid);"></div></div>
+          </div>
+          <div class="margin-pct" style="color:var(--green)">47%</div>
+        </div>
+        <div class="margin-item">
+          <div class="margin-rank">2</div>
+          <div class="margin-info">
+            <div class="margin-name">Compensado Naval</div>
+            <div class="margin-sub">Saída: 62 m³/mês · Estoque: 371 m³</div>
+          </div>
+          <div class="margin-bar-wrap">
+            <div class="hbar-track"><div class="hbar-fill" style="width:78%;background:var(--green-mid);"></div></div>
+          </div>
+          <div class="margin-pct" style="color:var(--green)">41%</div>
+        </div>
+        <div class="margin-item">
+          <div class="margin-rank">3</div>
+          <div class="margin-info">
+            <div class="margin-name">Pinus Bruto</div>
+            <div class="margin-sub">Saída: 95 m³/mês · Estoque: 484 m³</div>
+          </div>
+          <div class="margin-bar-wrap">
+            <div class="hbar-track"><div class="hbar-fill" style="width:68%;background:var(--green-mid);"></div></div>
+          </div>
+          <div class="margin-pct" style="color:var(--green)">36%</div>
+        </div>
+        <div class="margin-item">
+          <div class="margin-rank">4</div>
+          <div class="margin-info">
+            <div class="margin-name">MDF Branco 18mm</div>
+            <div class="margin-sub">Saída: 110 m³/mês · Estoque: 620 m³</div>
+          </div>
+          <div class="margin-bar-wrap">
+            <div class="hbar-track"><div class="hbar-fill" style="width:52%;background:var(--amber);"></div></div>
+          </div>
+          <div class="margin-pct" style="color:var(--amber)">28%</div>
+        </div>
+        <div class="margin-item">
+          <div class="margin-rank">5</div>
+          <div class="margin-info">
+            <div class="margin-name">OSB Estrutural</div>
+            <div class="margin-sub">Saída: 18 m³/mês · Estoque: 31 m³</div>
+          </div>
+          <div class="margin-bar-wrap">
+            <div class="hbar-track"><div class="hbar-fill" style="width:38%;background:var(--red);"></div></div>
+          </div>
+          <div class="margin-pct" style="color:var(--red)">19%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: VOLUME DE SAÍDA + SKU -->
+  <div class="two-col">
+
+    <!-- VOLUME DE SAÍDA 6 MESES -->
+    <div class="card">
+      <div class="card-title">
+        Volume de saída — Últimos 6 meses (m³)
+        <span class="card-title-tag tag-blue">Giro</span>
+      </div>
+      <div class="spark-row">
+        <div class="spark-item">
+          <div class="spark-label">MDF Branco</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:55%;background:#C0DD97;"></div>
+            <div class="spark-bar" style="height:70%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:65%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:85%;background:#639922;"></div>
+            <div class="spark-bar" style="height:90%;background:#639922;"></div>
+            <div class="spark-bar" style="height:100%;background:#3B6D11;"></div>
+          </div>
+          <div class="spark-val">660 m³</div>
+        </div>
+        <div class="spark-item">
+          <div class="spark-label">Pinus Bruto</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:80%;background:#C0DD97;"></div>
+            <div class="spark-bar" style="height:75%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:82%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:78%;background:#639922;"></div>
+            <div class="spark-bar" style="height:85%;background:#639922;"></div>
+            <div class="spark-bar" style="height:90%;background:#3B6D11;"></div>
+          </div>
+          <div class="spark-val">570 m³</div>
+        </div>
+        <div class="spark-item">
+          <div class="spark-label">Compensado</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:60%;background:#C0DD97;"></div>
+            <div class="spark-bar" style="height:55%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:65%;background:#97C459;"></div>
+            <div class="spark-bar" style="height:70%;background:#639922;"></div>
+            <div class="spark-bar" style="height:62%;background:#639922;"></div>
+            <div class="spark-bar" style="height:75%;background:#3B6D11;"></div>
+          </div>
+          <div class="spark-val">372 m³</div>
+        </div>
+        <div class="spark-item">
+          <div class="spark-label">Eucalipto</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:40%;background:#B5D4F4;"></div>
+            <div class="spark-bar" style="height:50%;background:#85B7EB;"></div>
+            <div class="spark-bar" style="height:45%;background:#85B7EB;"></div>
+            <div class="spark-bar" style="height:55%;background:#378ADD;"></div>
+            <div class="spark-bar" style="height:60%;background:#378ADD;"></div>
+            <div class="spark-bar" style="height:65%;background:#185FA5;"></div>
+          </div>
+          <div class="spark-val">288 m³</div>
+        </div>
+        <div class="spark-item">
+          <div class="spark-label">MDF Cru</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:90%;background:#F7C1C1;"></div>
+            <div class="spark-bar" style="height:95%;background:#F09595;"></div>
+            <div class="spark-bar" style="height:100%;background:#E24B4A;"></div>
+            <div class="spark-bar" style="height:95%;background:#E24B4A;"></div>
+            <div class="spark-bar" style="height:88%;background:#A32D2D;"></div>
+            <div class="spark-bar" style="height:82%;background:#A32D2D;"></div>
+          </div>
+          <div class="spark-val" style="color:var(--red)">312 m³ ⚠</div>
+        </div>
+        <div class="spark-item">
+          <div class="spark-label">OSB</div>
+          <div class="spark-bars">
+            <div class="spark-bar" style="height:35%;background:#FAC775;"></div>
+            <div class="spark-bar" style="height:42%;background:#EF9F27;"></div>
+            <div class="spark-bar" style="height:50%;background:#EF9F27;"></div>
+            <div class="spark-bar" style="height:55%;background:#BA7517;"></div>
+            <div class="spark-bar" style="height:60%;background:#BA7517;"></div>
+            <div class="spark-bar" style="height:70%;background:#854F0B;"></div>
+          </div>
+          <div class="spark-val" style="color:var(--amber)">108 m³ ↑</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SKU PRODUZÍVEIS -->
+    <div class="card">
+      <div class="card-title">
+        SKUs produzíveis por espécie
+        <span class="card-title-tag tag-green">Produção</span>
+      </div>
+      <div class="sku-grid">
+        <div class="sku-item">
+          <div>
+            <div class="sku-count">89</div>
+            <div class="sku-name">MDF Branco</div>
+            <div class="sku-detail">18mm · 7 medidas · estoque 5,6 meses</div>
+          </div>
+        </div>
+        <div class="sku-item">
+          <div>
+            <div class="sku-count">64</div>
+            <div class="sku-name">Pinus Bruto</div>
+            <div class="sku-detail">15–25mm · 5 medidas · estoque 5,1 meses</div>
+          </div>
+        </div>
+        <div class="sku-item">
+          <div>
+            <div class="sku-count">47</div>
+            <div class="sku-name">Compensado Naval</div>
+            <div class="sku-detail">12–18mm · 4 medidas · estoque 6,0 meses</div>
+          </div>
+        </div>
+        <div class="sku-item">
+          <div>
+            <div class="sku-count">31</div>
+            <div class="sku-name">Eucalipto Laminado</div>
+            <div class="sku-detail">25mm · 3 medidas · estoque 6,2 meses</div>
+          </div>
+        </div>
+        <div class="sku-item" style="border-color:var(--red-light);background:var(--red-light);">
+          <div>
+            <div class="sku-count" style="color:var(--red)">9</div>
+            <div class="sku-name">MDF Cru 15mm</div>
+            <div class="sku-detail" style="color:var(--red);opacity:0.8">⚠ Estoque crítico &lt; 0,5 meses</div>
+          </div>
+        </div>
+        <div class="sku-item" style="border-color:var(--amber-light);background:var(--amber-light);">
+          <div>
+            <div class="sku-count" style="color:var(--amber)">7</div>
+            <div class="sku-name">OSB Estrutural</div>
+            <div class="sku-detail" style="color:var(--amber);opacity:0.8">↑ Demanda crescente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBSTITUIÇÃO -->
+  <div class="card" style="margin-bottom:2rem;">
+    <div class="card-title">
+      Oportunidades de substituição por corte — Excessos cobrindo faltas
+      <span class="card-title-tag tag-amber">Otimização</span>
+    </div>
+    <div class="matrix-wrap">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>De (Excesso)</th>
+            <th></th>
+            <th>Para (Falta)</th>
+            <th>Medidas envolvidas</th>
+            <th>Volume resgatável</th>
+            <th>Economia potencial</th>
+            <th>Prioridade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank-num gold">1</span></td>
+            <td><strong style="font-weight:500">MDF Branco 18mm</strong><br><span style="font-size:11px;color:var(--ink3)">1830×915</span></td>
+            <td><span class="arrow">→</span></td>
+            <td><strong style="font-weight:500">MDF Cru 15mm</strong><br><span style="font-size:11px;color:var(--ink3)">1830×915</span></td>
+            <td style="font-size:12px;">Mesma largura · corte esp.</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="impact-bar"><div class="impact-fill" style="width:85%;background:var(--green-mid);"></div></div>
+                <strong style="font-family:'Syne',sans-serif;font-size:13px;">68 m³</strong>
+              </div>
+            </td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--green)">R$ 184k</td>
+            <td><span class="pill pill-red">Urgente</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num silver">2</span></td>
+            <td><strong style="font-weight:500">Compensado Naval 12mm</strong><br><span style="font-size:11px;color:var(--ink3)">2440×1220</span></td>
+            <td><span class="arrow">→</span></td>
+            <td><strong style="font-weight:500">OSB Estrutural 18mm</strong><br><span style="font-size:11px;color:var(--ink3)">2440×1220</span></td>
+            <td style="font-size:12px;">Mesma chapa · espessura dif.</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="impact-bar"><div class="impact-fill" style="width:60%;background:var(--green-mid);"></div></div>
+                <strong style="font-family:'Syne',sans-serif;font-size:13px;">44 m³</strong>
+              </div>
+            </td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--green)">R$ 112k</td>
+            <td><span class="pill pill-amber">Alta</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num bronze">3</span></td>
+            <td><strong style="font-weight:500">Pinus 15mm Liso</strong><br><span style="font-size:11px;color:var(--ink3)">2200×1100</span></td>
+            <td><span class="arrow">→</span></td>
+            <td><strong style="font-weight:500">Pinus 12mm Estrut.</strong><br><span style="font-size:11px;color:var(--ink3)">2200×1100</span></td>
+            <td style="font-size:12px;">Mesmo comprimento · corte esp.</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="impact-bar"><div class="impact-fill" style="width:45%;background:var(--amber);"></div></div>
+                <strong style="font-family:'Syne',sans-serif;font-size:13px;">29 m³</strong>
+              </div>
+            </td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--amber)">R$ 67k</td>
+            <td><span class="pill pill-amber">Alta</span></td>
+          </tr>
+          <tr>
+            <td><span class="rank-num">4</span></td>
+            <td><strong style="font-weight:500">Eucalipto 25mm Bruto</strong><br><span style="font-size:11px;color:var(--ink3)">2750×1840</span></td>
+            <td><span class="arrow">→</span></td>
+            <td><strong style="font-weight:500">Eucalipto 20mm Benefic.</strong><br><span style="font-size:11px;color:var(--ink3)">2750×1840</span></td>
+            <td style="font-size:12px;">Mesmo par · beneficiamento</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="impact-bar"><div class="impact-fill" style="width:28%;background:var(--blue);"></div></div>
+                <strong style="font-family:'Syne',sans-serif;font-size:13px;">18 m³</strong>
+              </div>
+            </td>
+            <td style="font-family:'Syne',sans-serif;font-weight:600;color:var(--blue)">R$ 43k</td>
+            <td><span class="pill pill-blue">Média</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AÇÕES POR CARGO -->
+  <div class="action-section">
+    <div class="section-head">
+      <h2>Ações recomendadas por cargo</h2>
+      <span>Baseado nos dados do período</span>
+    </div>
+    <div class="action-grid">
+
+      <!-- PRESIDENTE -->
+      <div class="action-card presidente">
+        <div class="action-header">
+          <div class="action-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"/></svg>
+          </div>
+          <div>
+            <div class="action-role">Presidente</div>
+            <div class="action-sub">Visão estratégica · acompanhamento</div>
+          </div>
+        </div>
+        <div class="action-body">
+          <div class="action-item">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Avaliar exposição de R$ 2,4M em estoque ocioso</strong>
+              <span>Compensado e MDF Branco concentram 82% do excesso. Decisão de desconto ou reaproveitamento interno impacta diretamente o fluxo de caixa do trimestre.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Aprovar política de substituição de espécies</strong>
+              <span>4 oportunidades mapeadas somam R$ 406k recuperáveis sem nova compra. Requer autorização de engenharia e comercial.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">3</div>
+            <div class="action-text">
+              <strong>Monitorar OSB — demanda crescente sem cobertura</strong>
+              <span>Saída acelerou 40% em 6 meses. Estoque cobre menos de 2 semanas. Risco de perda de contrato em aberto.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIRETOR -->
+      <div class="action-card diretor">
+        <div class="action-header">
+          <div class="action-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div>
+            <div class="action-role">Diretor</div>
+            <div class="action-sub">Gestão operacional · decisões táticas</div>
+          </div>
+        </div>
+        <div class="action-body">
+          <div class="action-item">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Acionar compra emergencial de MDF Cru 15mm e OSB</strong>
+              <span>Ruptura iminente em menos de 30 dias. Quantidade sugerida: MDF Cru 80 m³ e OSB 60 m³ para 90 dias de cobertura.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Renegociar giro do MDF Branco com comercial</strong>
+              <span>620 m³ acumulados = 5,6 meses de cobertura com margem de 28%. Considerar promoção dirigida ou condições especiais para acelerar saída.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">3</div>
+            <div class="action-text">
+              <strong>Priorizar Eucalipto na programação de produção</strong>
+              <span>Maior margem (47%) com estoque saudável. Aumentar mix de SKUs produzíveis de 31 para meta de 50 neste ciclo.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">4</div>
+            <div class="action-text">
+              <strong>Validar as 4 substituições mapeadas com PCP e qualidade</strong>
+              <span>Potencial de R$ 406k sem nova compra. Aprovação técnica estimada em 5 dias úteis.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GERENTE -->
+      <div class="action-card gerente">
+        <div class="action-header">
+          <div class="action-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+          </div>
+          <div>
+            <div class="action-role">Gerente de Estoque / PCP</div>
+            <div class="action-sub">Execução · controle · inventário</div>
+          </div>
+        </div>
+        <div class="action-body">
+          <div class="action-item">
+            <div class="action-num">1</div>
+            <div class="action-text">
+              <strong>Emitir requisição de compra: MDF Cru + OSB hoje</strong>
+              <span>MDF Cru: 80 m³ · OSB: 60 m³. Usar fornecedores homologados. Prazo de entrega não pode exceder 12 dias úteis.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">2</div>
+            <div class="action-text">
+              <strong>Executar contagem física dos grupos 1–3 desta semana</strong>
+              <span>MDF Branco, Compensado e Pinus. Divergência de +/− 5% entre PCP e Compras indica necessidade de inventário completo.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">3</div>
+            <div class="action-text">
+              <strong>Encaminhar proposta de corte das 4 substituições ao PCP</strong>
+              <span>Seguir a planilha de corte por medida. Itens 1 e 2 são críticos. Registrar aprovação de qualidade antes de executar.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">4</div>
+            <div class="action-text">
+              <strong>Atualizar planilha de saída semanal com dados de OSB</strong>
+              <span>Tendência de alta requer revisão do ponto de pedido. Sugestão: reduzir de 90 para 60 dias o ciclo de reposição.</span>
+            </div>
+          </div>
+          <div class="action-item">
+            <div class="action-num">5</div>
+            <div class="action-text">
+              <strong>Bloquear retirada de Eucalipto para obras internas</strong>
+              <span>Material de alta margem. Liberação apenas com aprovação do Diretor para garantir disponibilidade comercial.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Painel Estratégico de Estoque de Painéis · Dados via Google Sheets · Uso interno restrito · Gerado automaticamente
+</div>
+
+</body>
+</html>
